@@ -16,4 +16,4 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export const PACKAGE_NAME = 'macadam.js';
+export const PACKAGE_NAME = '@crc-org/macadam.js';
