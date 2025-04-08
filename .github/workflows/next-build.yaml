@@ -41,6 +41,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: 'https://npm.pkg.github.com'
+          scope: ${{ github.repository_owner }}
           cache: 'pnpm'
 
       - name: Execute pnpm
@@ -50,9 +52,6 @@ jobs:
         run: |
           pnpm build
 
-      - name: Set-up npmjs auth token
-        run: printf "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}\n" >> ~/.npmrc
-
       - name: Download macadam binaries
         run: |
           MACADAM_VERSION=v0.0.2
@@ -61,7 +60,7 @@ jobs:
           curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-darwin-amd64 -o binaries/macadam-darwin-amd64
           curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-darwin-arm64 -o binaries/macadam-darwin-arm64
 
-      - name: Publish to npmjs
+      - name: Set version
         run: |
           PACKAGE_VERSION=$(jq -r '.version' package.json)
           STRIPPED_VERSION=${PACKAGE_VERSION%-next}
@@ -69,4 +68,8 @@ jobs:
           TAG_PATTERN=${STRIPPED_VERSION}-$(date +'%Y%m%d%H%M')-${SHORT_SHA1}
           echo "Using version ${TAG_PATTERN}"
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${TAG_PATTERN}\",#g" package.json
-          pnpm publish --tag next --no-git-checks --access public
+      
+      - name: publish npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
