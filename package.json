@@ -1,5 +1,9 @@
 {
-  "name": "macadam.js",
+  "name": "@crc-org/macadam.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crc-org/macadam.js.git"
+  },
   "version": "0.0.1",
   "description": "An NPM library to work with macadam from Node projects",
   "main": "./dist/index.js",
