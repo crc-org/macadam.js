@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@podman-desktop/api':
+        specifier: ^1.18.0
+        version: 1.18.0
     devDependencies:
       '@types/node':
         specifier: ^22.14.0
@@ -16,6 +20,9 @@ importers:
         version: 5.8.3
 
 packages:
+
+  '@podman-desktop/api@1.18.0':
+    resolution: {integrity: sha512-+6MeXHxTPxcf0dT+Hmyer5o0QFQXYdBaZPoy68pd0Cx6O60EKeuWh7T4zcanf8m2cdZ63/iqfnrCwo26c3DZbg==}
 
   '@types/node@22.14.0':
     resolution: {integrity: sha512-Kmpl+z84ILoG+3T/zQFyAJsU6EPTmOCj8/2+83fSN6djd6I4o7uOuGIH6vq3PrjY5BGitSbFuMN18j3iknubbA==}
@@ -29,6 +36,8 @@ packages:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
 snapshots:
+
+  '@podman-desktop/api@1.18.0': {}
 
   '@types/node@22.14.0':
     dependencies:
