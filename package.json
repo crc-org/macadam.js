@@ -9,12 +9,15 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "npx tsc --build",
-    "clean": "npx tsc --build --clean"
+    "clean": "npx tsc --build --clean",
+    "test:unit": "cd src && vitest run --coverage --passWithNoTests"
   },
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^22.14.0",
-    "typescript": "^5.8.3"
+    "@vitest/coverage-v8": "^3.1.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
   },
   "files": [
     "dist",
