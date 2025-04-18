@@ -15,10 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Macadam } from '.';
-import * as extensionApi from '@podman-desktop/api';
 import { chmod } from 'node:fs/promises';
+
+import * as extensionApi from '@podman-desktop/api';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { Macadam } from '.';
 
 class TestMacadam extends Macadam {
   override _init(resolver?: (request: string, options?: NodeJS.RequireResolveOptions) => string): Promise<void> {

@@ -15,11 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { arch, platform } from 'node:os';
-import { PACKAGE_NAME } from './consts';
-import * as extensionApi from '@podman-desktop/api';
-import { dirname, resolve } from 'node:path';
 import { chmod } from 'node:fs/promises';
+import { arch, platform } from 'node:os';
+import { dirname, resolve } from 'node:path';
+
+import * as extensionApi from '@podman-desktop/api';
+
+import { PACKAGE_NAME } from './consts';
 
 type Resolver = (request: string, options?: NodeJS.RequireResolveOptions) => string;
 
@@ -39,12 +41,16 @@ export interface CreateVmOptions extends CommonOptions {
   username?: string; // -- username
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ListVmsOptions extends CommonOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RemoveVmOptions extends CommonOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface StartVmOptions extends CommonOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface StopVmOptions extends CommonOptions {}
 
 export interface VmDetails {
@@ -74,9 +80,7 @@ export class Macadam {
   }
 
   protected async _init(resolver?: Resolver): Promise<void> {
-    if (!resolver) {
-      resolver = require.resolve;
-    }
+    resolver ??= require.resolve;
     this.#macadamPath = await this.findMacadamPath(resolver);
     if (extensionApi.env.isMac) {
       this.#utilitiesPath = await this.findUtilitiesPath();
@@ -91,7 +95,7 @@ export class Macadam {
     } else if (extensionApi.env.isMac) {
       if (arch() === 'arm64') {
         bin = 'macadam-darwin-arm64';
-      } else if (arch() == 'x64') {
+      } else if (arch() === 'x64') {
         bin = 'macadam-darwin-amd64';
       }
     }
@@ -195,7 +199,7 @@ export class Macadam {
     return result;
   }
 
-  async removeVm(options: RemoveVmOptions) {
+  async removeVm(options: RemoveVmOptions): Promise<extensionApi.RunResult> {
     if (!this.#initialized) {
       throw new Error('component not initialized. You must call init() before');
     }
@@ -206,7 +210,7 @@ export class Macadam {
     );
   }
 
-  async startVm(options: StartVmOptions) {
+  async startVm(options: StartVmOptions): Promise<extensionApi.RunResult> {
     if (!this.#initialized) {
       throw new Error('component not initialized. You must call init() before');
     }
@@ -217,7 +221,7 @@ export class Macadam {
     );
   }
 
-  async stopVm(options: StopVmOptions) {
+  async stopVm(options: StopVmOptions): Promise<extensionApi.RunResult> {
     if (!this.#initialized) {
       throw new Error('component not initialized. You must call init() before');
     }

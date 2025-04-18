@@ -15,13 +15,29 @@
     "format:fix": "prettier --write \"src/**/*.ts\"",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck:backend": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@eslint/compat": "^1.2.8",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.24.0",
     "@types/node": "^22.14.0",
     "@vitest/coverage-v8": "^3.1.1",
+    "eslint": "^9.24.0",
+    "eslint-import-resolver-typescript": "^4.3.2",
+    "eslint-plugin-etc": "^2.0.3",
+    "eslint-plugin-file-progress": "^3.0.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-no-null": "^1.0.2",
+    "eslint-plugin-redundant-undefined": "^1.0.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sonarjs": "^3.0.2",
+    "eslint-plugin-unicorn": "^58.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1",
     "vitest": "^3.1.1"
   },
   "files": [
@@ -30,8 +46,7 @@
     "!dist/tsconfig.tsbuildinfo"
   ],
   "dependencies": {
-    "@podman-desktop/api": "^1.18.0",
-    "prettier": "^3.5.3"
+    "@podman-desktop/api": "^1.18.0"
   },
   "packageManager": "pnpm@10.6.2+sha512.47870716bea1572b53df34ad8647b42962bc790ce2bf4562ba0f643237d7302a3d6a8ecef9e4bdfc01d23af1969aa90485d4cebb0b9638fa5ef1daef656f6c1b"
 }
