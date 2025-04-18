@@ -32,6 +32,10 @@ class TestMacadam extends Macadam {
   override getUtilitiesPath(): string | undefined {
     return super.getUtilitiesPath();
   }
+
+  override getFinalOptions(runOptions?: extensionApi.RunOptions, containerProvider?: string): extensionApi.RunOptions {
+    return super.getFinalOptions(runOptions, containerProvider);
+  }
 }
 
 let macadam: TestMacadam;
@@ -77,6 +81,62 @@ test('init on Mac', async () => {
   expect(macadam.getUtilitiesPath()).toEqual('/path/to/utilities');
 });
 
+describe('getFinalOptions', () => {
+  test('with no option and no utilitiesPath', () => {
+    const result = macadam.getFinalOptions();
+    expect(result).toEqual({});
+  });
+
+  describe('with utilitiesPath', async () => {
+    beforeEach(async () => {
+      vi.mocked(extensionApi.env).isMac = true;
+      vi.mocked(extensionApi.env).isWindows = false;
+      const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+      resolver.mockReturnValue('/path/to/extension/package.json');
+      vi.mocked(extensionApi.process.exec).mockResolvedValue({ stdout: '/path/to/utilities/utility', stderr: '', command: ''});
+      await macadam._init(resolver);  
+    });
+
+    test('with no option', async () => {
+      const result = macadam.getFinalOptions();
+      expect(result).toEqual({
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      });
+    });
+
+    test('with provider', async () => {
+      const result = macadam.getFinalOptions(undefined, 'vfkit');
+      console.log('==> result', result);
+      expect(result).toEqual({
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+          CONTAINERS_MACHINE_PROVIDER: 'vfkit',
+        },
+      });
+    });
+
+    test('with run options and provider', async () => {
+      const result = macadam.getFinalOptions({
+        env: {
+          key1: 'value1',
+        },
+        cwd: '/path/to/cwd',
+        isAdmin: true,
+      }, 'vfkit');
+      expect(result).toEqual({
+        env: {
+          key1: 'value1',
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+          CONTAINERS_MACHINE_PROVIDER: 'vfkit',
+        },
+        cwd: '/path/to/cwd',
+        isAdmin: true,
+      });
+    });
+  });
+});
 
 test('init on Windows', async () => {
   vi.mocked(extensionApi.env).isMac = false;
@@ -92,6 +152,30 @@ test('init on Windows', async () => {
   expect(macadam.getUtilitiesPath()).toBeUndefined();
 });
 
+describe('init is not done', async () => {
+  test('createVm throws an error', async () => {
+    await expect(macadam.createVm({
+      imagePath: '/path/to/image.raw',
+    })).rejects.toThrowError('component not initialized. You must call init() before');
+  })
+
+  test('listVms throws an error', async () => {
+    await expect(macadam.listVms({})).rejects.toThrowError('component not initialized. You must call init() before');
+  })
+
+  test('removeVm throws an error', async () => {
+    await expect(macadam.removeVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+  })
+
+  test('startVm throws an error', async () => {
+    await expect(macadam.startVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+  })
+
+  test('stopVm throws an error', async () => {
+    await expect(macadam.stopVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+  })
+});
+
 describe('init is done', async () => {
 
   beforeEach(async () => {
@@ -101,6 +185,48 @@ describe('init is done', async () => {
     resolver.mockReturnValue('/path/to/extension/package.json');
     vi.mocked(extensionApi.process.exec).mockResolvedValue({ stdout: '/path/to/utilities/utility', stderr: '', command: ''});
     await macadam._init(resolver);  
+  });
+
+  test('createVm with image only', async () => {
+    const result = await macadam.createVm({
+      imagePath: '/path/to/image.raw',
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      '/path/to/extension/binaries/macadam-darwin-arm64',
+      [
+        'init',
+        '/path/to/image.raw',
+      ],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      },
+    );
+  });
+
+  test('createVm with all options', async () => {
+    const result = await macadam.createVm({
+      imagePath: '/path/to/image.raw',
+      sshIdentityPath: '/path/to/id',
+      username: 'user1',
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      '/path/to/extension/binaries/macadam-darwin-arm64',
+      [
+        'init',
+        '/path/to/image.raw',
+        '--ssh-identity-path',
+        '/path/to/id',
+        '--username',
+        'user1',
+      ],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      },
+    );
   });
 
   test('listVms', async () => {
@@ -131,6 +257,52 @@ describe('init is done', async () => {
       RemoteUsername: "core",
       IdentityPath: "/Users/phmartin/.local/share/containers/macadam/machine/machine",
       VMType: "applehv"
-    });
-  });  
+    });    
+  });
+
+  test('removeVm', async () => {
+    const result = await macadam.removeVm({});
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      '/path/to/extension/binaries/macadam-darwin-arm64',
+      [
+        'rm',
+        '-f',
+      ],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      },
+    );
+  });
+
+  test('startVm', async () => {
+    const result = await macadam.startVm({});
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      '/path/to/extension/binaries/macadam-darwin-arm64',
+      [
+        'start',
+      ],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      },
+    );
+  });
+
+  test('stopVm', async () => {
+    const result = await macadam.stopVm({});
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      '/path/to/extension/binaries/macadam-darwin-arm64',
+      [
+        'stop',
+      ],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: '/path/to/utilities',
+        },
+      },
+    );
+  });
 });
