@@ -43,6 +43,10 @@ export interface ListVmsOptions extends CommonOptions {}
 
 export interface RemoveVmOptions extends CommonOptions {}
 
+export interface StartVmOptions extends CommonOptions {}
+
+export interface StopVmOptions extends CommonOptions {}
+
 export interface VmDetails {
   Image: string;
   CPUs: number;
@@ -198,6 +202,28 @@ export class Macadam {
     return await extensionApi.process.exec(
       this.#macadamPath, 
       ['rm', '-f'],
+      this.getFinalOptions(options.runOptions, options.containerProvider),
+    );
+  }
+
+  async startVm(options: StartVmOptions) {
+    if (!this.#initialized) {
+      throw new Error('component not initialized. You must call init() before');
+    }
+    return await extensionApi.process.exec(
+      this.#macadamPath, 
+      ['start'],
+      this.getFinalOptions(options.runOptions, options.containerProvider),
+    );
+  }
+
+  async stopVm(options: StopVmOptions) {
+    if (!this.#initialized) {
+      throw new Error('component not initialized. You must call init() before');
+    }
+    return await extensionApi.process.exec(
+      this.#macadamPath, 
+      ['stop'],
       this.getFinalOptions(options.runOptions, options.containerProvider),
     );
   }
