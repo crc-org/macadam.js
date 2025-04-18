@@ -15,10 +15,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { vi } from 'vitest';
 
 /**
  * Mock the extension API for vitest.
  * This file is referenced from vitest.config.js file.
  */
-const plugin = {};
+const plugin = {
+  process: {
+    exec: vi.fn(),
+  },
+  env: {
+    isLinux: false,
+    isWindows: false,
+    isMac: false,
+    createTelemetryLogger: vi.fn(),
+  },
+};
 module.exports = plugin;
+

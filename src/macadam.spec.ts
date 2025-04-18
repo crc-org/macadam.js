@@ -18,7 +18,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Macadam } from '.';
 import * as extensionApi from '@podman-desktop/api';
-import * as fs from 'node:fs';
+import { chmod } from 'node:fs/promises';
 
 class TestMacadam extends Macadam {
   override _init(resolver?: (request: string, options?: NodeJS.RequireResolveOptions) => string): Promise<void> {
@@ -38,29 +38,9 @@ class TestMacadam extends Macadam {
   }
 }
 
+vi.mock(import('node:fs/promises'));
+
 let macadam: TestMacadam;
-
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    process: {
-      exec: vi.fn(),
-    },
-    env: {
-      isLinux: false,
-      isWindows: false,
-      isMac: false,
-      createTelemetryLogger: vi.fn(),
-    },
-  };
-});
-
-vi.mock('node:fs', async () => {
-  return {
-    promises: {
-      chmod: vi.fn(),
-    },
-  };
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -76,7 +56,7 @@ test('init on Mac', async () => {
   await macadam._init(resolver);
 
   expect(macadam.getMacadamPath()).toEqual('/path/to/extension/binaries/macadam-darwin-arm64');
-  expect(fs.promises.chmod).toHaveBeenCalledWith('/path/to/extension/binaries/macadam-darwin-arm64', '755');
+  expect(chmod).toHaveBeenCalledWith('/path/to/extension/binaries/macadam-darwin-arm64', '755');
 
   expect(macadam.getUtilitiesPath()).toEqual('/path/to/utilities');
 });
@@ -147,7 +127,7 @@ test('init on Windows', async () => {
   await macadam._init(resolver);
 
   expect(macadam.getMacadamPath()).toEqual('/path/to/extension/binaries/macadam-windows-amd64.exe');
-  expect(fs.promises.chmod).toHaveBeenCalledWith('/path/to/extension/binaries/macadam-windows-amd64.exe', '755');
+  expect(chmod).toHaveBeenCalledWith('/path/to/extension/binaries/macadam-windows-amd64.exe', '755');
 
   expect(macadam.getUtilitiesPath()).toBeUndefined();
 });
@@ -176,7 +156,7 @@ describe('init is not done', async () => {
   })
 });
 
-describe('init is done', async () => {
+describe('init is done', () => {
 
   beforeEach(async () => {
     vi.mocked(extensionApi.env).isMac = true;
@@ -188,7 +168,7 @@ describe('init is done', async () => {
   });
 
   test('createVm with image only', async () => {
-    const result = await macadam.createVm({
+    await macadam.createVm({
       imagePath: '/path/to/image.raw',
     });
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
@@ -206,7 +186,7 @@ describe('init is done', async () => {
   });
 
   test('createVm with all options', async () => {
-    const result = await macadam.createVm({
+    await macadam.createVm({
       imagePath: '/path/to/image.raw',
       sshIdentityPath: '/path/to/id',
       username: 'user1',
@@ -261,7 +241,7 @@ describe('init is done', async () => {
   });
 
   test('removeVm', async () => {
-    const result = await macadam.removeVm({});
+    await macadam.removeVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       '/path/to/extension/binaries/macadam-darwin-arm64',
       [
@@ -277,7 +257,7 @@ describe('init is done', async () => {
   });
 
   test('startVm', async () => {
-    const result = await macadam.startVm({});
+    await macadam.startVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       '/path/to/extension/binaries/macadam-darwin-arm64',
       [
@@ -292,7 +272,7 @@ describe('init is done', async () => {
   });
 
   test('stopVm', async () => {
-    const result = await macadam.stopVm({});
+    await macadam.stopVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       '/path/to/extension/binaries/macadam-darwin-arm64',
       [

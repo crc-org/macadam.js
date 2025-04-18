@@ -15,11 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import * as path from 'node:path';
-import * as os from 'node:os';
-import * as fs from 'node:fs';
+import { arch, platform } from 'node:os';
 import { PACKAGE_NAME } from './consts';
 import * as extensionApi from '@podman-desktop/api';
+import { dirname, resolve } from 'node:path';
+import { chmod } from 'node:fs/promises';
 
 type Resolver = (request: string, options?: NodeJS.RequireResolveOptions) => string;
 
@@ -89,19 +89,19 @@ export class Macadam {
     if (extensionApi.env.isWindows) {
       bin = 'macadam-windows-amd64.exe';
     } else if (extensionApi.env.isMac) {
-      if (os.arch() === 'arm64') {
+      if (arch() === 'arm64') {
         bin = 'macadam-darwin-arm64';
-      } else if (os.arch() == 'x64') {
+      } else if (arch() == 'x64') {
         bin = 'macadam-darwin-amd64';
       }
     }
     if (!bin) {
-      throw new Error(`binary not found for platform ${os.platform()} and architecture ${os.arch()}`);
+      throw new Error(`binary not found for platform ${platform()} and architecture ${arch()}`);
     }
-    const packagePath = path.dirname(resolver(`${PACKAGE_NAME}/package.json`));
+    const packagePath = dirname(resolver(`${PACKAGE_NAME}/package.json`));
   
-    const filepath = path.resolve(packagePath, 'binaries', bin);
-    await fs.promises.chmod(filepath, '755');
+    const filepath = resolve(packagePath, 'binaries', bin);
+    await chmod(filepath, '755');
     return filepath;
   }
 
@@ -110,7 +110,7 @@ export class Macadam {
     let result: string = '';
     for (const utility of utilities) {
       const utilityPath = await this.findExecutableInPath(utility);
-      const utilityDir = path.dirname(utilityPath);
+      const utilityDir = dirname(utilityPath);
       if (result && utilityDir !== result) {
         throw new Error(`utilities must be in the same directory: ${utilities.join(', ')}`);
       }
