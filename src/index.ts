@@ -110,11 +110,11 @@ export class Macadam {
     let result: string = '';
     for (const utility of utilities) {
       const utilityPath = await this.findExecutableInPath(utility);
-      const utiliyDir = path.dirname(utilityPath);
-      if (result && utiliyDir !== result) {
+      const utilityDir = path.dirname(utilityPath);
+      if (result && utilityDir !== result) {
         throw new Error(`utilities must be in the same directory: ${utilities.join(', ')}`);
       }
-      result = utiliyDir;
+      result = utilityDir;
     }
     return result;
   }
