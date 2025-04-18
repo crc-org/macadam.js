@@ -41,6 +41,8 @@ export interface CreateVmOptions extends CommonOptions {
 
 export interface ListVmsOptions extends CommonOptions {}
 
+export interface RemoveVmOptions extends CommonOptions {}
+
 export interface VmDetails {
   Image: string;
   CPUs: number;
@@ -187,6 +189,17 @@ export class Macadam {
       }
     }
     return result;
+  }
+
+  async removeVm(options: RemoveVmOptions) {
+    if (!this.#initialized) {
+      throw new Error('component not initialized. You must call init() before');
+    }
+    return await extensionApi.process.exec(
+      this.#macadamPath, 
+      ['rm', '-f'],
+      this.getFinalOptions(options.runOptions, options.containerProvider),
+    );
   }
 
   protected isVmDetails(vm: unknown): vm is VmDetails {
