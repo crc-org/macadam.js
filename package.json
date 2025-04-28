@@ -8,7 +8,7 @@
   "description": "An NPM library to work with macadam from Node projects",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "npx tsc --build",
+    "build": "npx tsc --module commonjs",
     "clean": "npx tsc --build --clean",
     "test:unit": "cd src && vitest run --coverage --passWithNoTests",
     "format:check": "prettier --check \"src/**/*.ts\"",
