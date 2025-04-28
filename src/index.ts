@@ -95,7 +95,7 @@ export class Macadam {
     if (extensionApi.env.isWindows) {
       bin = 'macadam-windows-amd64.exe';
     } else if (extensionApi.env.isMac) {
-      bin = 'macadam-installer-universal.pkg';
+      bin = 'macadam-installer-macos-universal.pkg';
     }
     if (!bin) {
       throw new Error(`binary not found for platform ${platform()} and architecture ${arch()}`);
