@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { chmod } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { platform } from 'node:os';
 import { resolve } from 'node:path';
 
@@ -23,6 +23,7 @@ import * as extensionApi from '@podman-desktop/api';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Macadam } from '.';
+import { MACADAM_MACOS_PATH } from './consts';
 
 class TestMacadam extends Macadam {
   override _init(resolver?: (request: string, options?: NodeJS.RequireResolveOptions) => string): Promise<void> {
@@ -42,7 +43,7 @@ class TestMacadam extends Macadam {
   }
 }
 
-vi.mock(import('node:fs/promises'));
+vi.mock(import('node:fs'));
 
 let macadam: TestMacadam;
 
@@ -61,22 +62,17 @@ test(
     vi.mocked(extensionApi.env).isWindows = false;
     const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
     resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(extensionApi.process.exec).mockResolvedValue({
-      stdout: resolve('/', 'path', 'to', 'utilities', 'utility'),
+      stdout: '',
       stderr: '',
       command: '',
     });
     await macadam._init(resolver);
 
-    expect(macadam.getMacadamPath()).toEqual(
-      resolve('/', 'path', 'to', 'extension', 'binaries', 'macadam-darwin-arm64'),
-    );
-    expect(chmod).toHaveBeenCalledWith(
-      resolve('/', 'path', 'to', 'extension', 'binaries', 'macadam-darwin-arm64'),
-      '755',
-    );
+    expect(macadam.getMacadamPath()).toEqual(resolve(MACADAM_MACOS_PATH, 'macadam'));
 
-    expect(macadam.getUtilitiesPath()).toEqual(resolve('/', 'path', 'to', 'utilities'));
+    expect(macadam.getUtilitiesPath()).toEqual(MACADAM_MACOS_PATH);
   },
 );
 
@@ -99,10 +95,6 @@ test(
 
     expect(macadam.getMacadamPath()).toEqual(
       resolve('/', 'path', 'to', 'extension', 'binaries', 'macadam-windows-amd64.exe'),
-    );
-    expect(chmod).toHaveBeenCalledWith(
-      resolve('/', 'path', 'to', 'extension', 'binaries', 'macadam-windows-amd64.exe'),
-      '755',
     );
 
     expect(macadam.getUtilitiesPath()).toBeUndefined();
@@ -133,7 +125,7 @@ describe('getFinalOptions', () => {
       const result = macadam.getFinalOptions();
       expect(result).toEqual({
         env: {
-          CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+          CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
         },
       });
     });
@@ -142,7 +134,7 @@ describe('getFinalOptions', () => {
       const result = macadam.getFinalOptions(undefined, 'vfkit');
       expect(result).toEqual({
         env: {
-          CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+          CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
           CONTAINERS_MACHINE_PROVIDER: 'vfkit',
         },
       });
@@ -162,7 +154,7 @@ describe('getFinalOptions', () => {
       expect(result).toEqual({
         env: {
           key1: 'value1',
-          CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+          CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
           CONTAINERS_MACHINE_PROVIDER: 'vfkit',
         },
         cwd: resolve('/', 'path', 'to', 'cwd'),
@@ -218,7 +210,7 @@ describe('init is done', () => {
     });
     expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['init', '/path/to/image.raw'], {
       env: {
-        CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
     });
   });
@@ -234,7 +226,7 @@ describe('init is done', () => {
       ['init', '/path/to/image.raw', '--ssh-identity-path', '/path/to/id', '--username', 'user1'],
       {
         env: {
-          CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+          CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
         },
       },
     );
@@ -279,7 +271,7 @@ describe('init is done', () => {
     await macadam.removeVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['rm', '-f'], {
       env: {
-        CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
     });
   });
@@ -288,7 +280,7 @@ describe('init is done', () => {
     await macadam.startVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['start'], {
       env: {
-        CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
     });
   });
@@ -297,7 +289,7 @@ describe('init is done', () => {
     await macadam.stopVm({});
     expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['stop'], {
       env: {
-        CONTAINERS_HELPER_BINARY_DIR: resolve('/', 'path', 'to', 'utilities'),
+        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
     });
   });

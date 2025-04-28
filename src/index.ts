@@ -15,13 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { chmod } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { arch, platform } from 'node:os';
 import { dirname, resolve } from 'node:path';
 
 import * as extensionApi from '@podman-desktop/api';
 
-import { PACKAGE_NAME } from './consts';
+import { MACADAM_MACOS_PATH, PACKAGE_NAME } from './consts';
 
 type Resolver = (request: string, options?: NodeJS.RequireResolveOptions) => string;
 
@@ -81,9 +81,11 @@ export class Macadam {
 
   protected async _init(resolver?: Resolver): Promise<void> {
     resolver ??= require.resolve;
-    this.#macadamPath = await this.findMacadamPath(resolver);
+    this.#macadamPath = extensionApi.env.isMac
+      ? await this.findInstallMacadam(resolver)
+      : await this.findMacadamPath(resolver);
     if (extensionApi.env.isMac) {
-      this.#utilitiesPath = await this.findUtilitiesPath();
+      this.#utilitiesPath = MACADAM_MACOS_PATH;
     }
     this.#initialized = true;
   }
@@ -93,48 +95,22 @@ export class Macadam {
     if (extensionApi.env.isWindows) {
       bin = 'macadam-windows-amd64.exe';
     } else if (extensionApi.env.isMac) {
-      if (arch() === 'arm64') {
-        bin = 'macadam-darwin-arm64';
-      } else if (arch() === 'x64') {
-        bin = 'macadam-darwin-amd64';
-      }
+      bin = 'macadam-installer-macos-universal.pkg';
     }
     if (!bin) {
       throw new Error(`binary not found for platform ${platform()} and architecture ${arch()}`);
     }
     const packagePath = dirname(resolver(`${PACKAGE_NAME}/package.json`));
-
-    const filepath = resolve(packagePath, 'binaries', bin);
-    await chmod(filepath, '755');
-    return filepath;
+    return resolve(packagePath, 'binaries', bin);
   }
 
-  async findUtilitiesPath(): Promise<string> {
-    const utilities = ['vfkit', 'gvproxy'];
-    let result: string = '';
-    for (const utility of utilities) {
-      const utilityPath = await this.findExecutableInPath(utility);
-      const utilityDir = dirname(utilityPath);
-      if (result && utilityDir !== result) {
-        throw new Error(`utilities must be in the same directory: ${utilities.join(', ')}`);
-      }
-      result = utilityDir;
+  async findInstallMacadam(resolver: Resolver): Promise<string> {
+    const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
+    if (!existsSync(macadamPath)) {
+      const installer = await this.findMacadamPath(resolver);
+      await extensionApi.process.exec('installer', ['-pkg', installer, '-target', '/'], { isAdmin: true });
     }
-    return result;
-  }
-
-  async findExecutableInPath(executable: string): Promise<string> {
-    if (extensionApi.env.isMac) {
-      // grab full path for Linux and mac
-      const { stdout: fullPath } = await extensionApi.process.exec('which', [executable]);
-      return fullPath;
-    } else if (extensionApi.env.isWindows) {
-      // grab full path for Windows
-      const { stdout: fullPath } = await extensionApi.process.exec('where.exe', [executable]);
-      // remove all line break/carriage return characters from full path
-      return fullPath.replace(/(\r\n|\n|\r)/gm, '');
-    }
-    throw new Error('Platform not supported: only Mac and Windows platforms are supported');
+    return macadamPath;
   }
 
   protected getMacadamPath(): string {
