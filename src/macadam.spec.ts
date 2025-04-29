@@ -218,7 +218,7 @@ describe('init is done', () => {
     });
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       expect.anything(),
-      ['init', '/path/to/image.raw', '--name', 'mytype-vm1'],
+      ['init', '/path/to/image.raw', '--machine-name', 'mytype-vm1'],
       {
         env: {
           CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
@@ -239,7 +239,7 @@ describe('init is done', () => {
       [
         'init',
         '/path/to/image.raw',
-        '--name',
+        '--machine-name',
         'mytype-vm1',
         '--ssh-identity-path',
         '/path/to/id',

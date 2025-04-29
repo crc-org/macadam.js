@@ -37,7 +37,7 @@ export interface CreateVmOptions extends CommonOptions {
   // positional args
   imagePath: string;
   // flags
-  name: string; // --name
+  name: string; // --machine-name
   sshIdentityPath?: string; // --ssh-identity-path
   username?: string; // -- username
 }
@@ -147,7 +147,7 @@ export class Macadam {
     if (!this.#initialized) {
       throw new Error('component not initialized. You must call init() before');
     }
-    const parameters: string[] = ['init', options.imagePath, '--name', this.realMachineName(options.name)];
+    const parameters: string[] = ['init', options.imagePath, '--machine-name', this.realMachineName(options.name)];
     if (options.sshIdentityPath) {
       parameters.push('--ssh-identity-path');
       parameters.push(options.sshIdentityPath);
