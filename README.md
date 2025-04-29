@@ -27,19 +27,26 @@ import * as macadamjs from '@crc-org/macadam.js';
 const macadam = new macadamjs.Macadam('my-ext');
 await macadam.init();
 await macadam.createVm({
+  name: 'my-vm',
   imagePath: '/path/to/image.raw',
   username: 'core',
 });
 const vms = await macadam.listVms({});
 console.log('==> vms', vms);
 
-const startResult = await macadam.startVm({});
+const startResult = await macadam.startVm({
+    name: 'my-vm',
+});
 console.log('==> start', startResult);
 
-const stopResult = await macadam.stopVm({});
+const stopResult = await macadam.stopVm({
+    name: 'my-vm',
+});
 console.log('==> stop', stopResult);
 
-const rmResult = await macadam.removeVm({});
+const rmResult = await macadam.removeVm({
+    name: 'my-vm',
+});
 console.log('==> rm result', rmResult);
 
 const vms0 = await macadam.listVms({});

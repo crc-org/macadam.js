@@ -169,6 +169,7 @@ describe('init is not done', async () => {
     await expect(
       macadam.createVm({
         imagePath: '/path/to/image.raw',
+        name: 'vm1',
       }),
     ).rejects.toThrowError('component not initialized. You must call init() before');
   });
@@ -178,15 +179,21 @@ describe('init is not done', async () => {
   });
 
   test('removeVm throws an error', async () => {
-    await expect(macadam.removeVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+    await expect(macadam.removeVm({ name: 'vm1' })).rejects.toThrowError(
+      'component not initialized. You must call init() before',
+    );
   });
 
   test('startVm throws an error', async () => {
-    await expect(macadam.startVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+    await expect(macadam.startVm({ name: 'vm1' })).rejects.toThrowError(
+      'component not initialized. You must call init() before',
+    );
   });
 
   test('stopVm throws an error', async () => {
-    await expect(macadam.stopVm({})).rejects.toThrowError('component not initialized. You must call init() before');
+    await expect(macadam.stopVm({ name: 'vm1' })).rejects.toThrowError(
+      'component not initialized. You must call init() before',
+    );
   });
 });
 
@@ -204,26 +211,41 @@ describe('init is done', () => {
     await macadam._init(resolver);
   });
 
-  test('createVm with image only', async () => {
+  test('createVm with name and image only', async () => {
     await macadam.createVm({
+      name: 'vm1',
       imagePath: '/path/to/image.raw',
     });
-    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['init', '/path/to/image.raw'], {
-      env: {
-        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      expect.anything(),
+      ['init', '/path/to/image.raw', '--name', 'mytype-vm1'],
+      {
+        env: {
+          CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
+        },
       },
-    });
+    );
   });
 
   test('createVm with all options', async () => {
     await macadam.createVm({
+      name: 'vm1',
       imagePath: '/path/to/image.raw',
       sshIdentityPath: '/path/to/id',
       username: 'user1',
     });
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       expect.anything(),
-      ['init', '/path/to/image.raw', '--ssh-identity-path', '/path/to/id', '--username', 'user1'],
+      [
+        'init',
+        '/path/to/image.raw',
+        '--name',
+        'mytype-vm1',
+        '--ssh-identity-path',
+        '/path/to/id',
+        '--username',
+        'user1',
+      ],
       {
         env: {
           CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
@@ -236,6 +258,7 @@ describe('init is done', () => {
     vi.mocked(extensionApi.process.exec).mockResolvedValue({
       stdout: `[
   {
+      "Name": "mytype-my-vm",
       "Image": "/Users/me/.local/share/containers/macadam/machine/applehv/macadam-applehv.raw",
       "Running": false,
       "Starting": false,
@@ -244,7 +267,20 @@ describe('init is done', () => {
       "DiskSize": "21474836480",
       "Port": 49378,
       "RemoteUsername": "core",
-      "IdentityPath": "/Users/phmartin/.local/share/containers/macadam/machine/machine",
+      "IdentityPath": "/Users/me/.local/share/containers/macadam/machine/machine",
+      "VMType": "applehv"
+  },
+  {
+      "Name": "yourtype-my-vm",
+      "Image": "/Users/you/.local/share/containers/macadam/machine/applehv/macadam-applehv.raw",
+      "Running": false,
+      "Starting": false,
+      "CPUs": 2,
+      "Memory": "4294967296",
+      "DiskSize": "21474836480",
+      "Port": 49379,
+      "RemoteUsername": "core",
+      "IdentityPath": "/Users/you/.local/share/containers/macadam/machine/machine",
       "VMType": "applehv"
   }
 ]`,
@@ -254,6 +290,7 @@ describe('init is done', () => {
     const result = await macadam.listVms({});
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
+      Name: 'my-vm',
       Image: '/Users/me/.local/share/containers/macadam/machine/applehv/macadam-applehv.raw',
       Running: false,
       Starting: false,
@@ -262,14 +299,16 @@ describe('init is done', () => {
       DiskSize: '21474836480',
       Port: 49378,
       RemoteUsername: 'core',
-      IdentityPath: '/Users/phmartin/.local/share/containers/macadam/machine/machine',
+      IdentityPath: '/Users/me/.local/share/containers/macadam/machine/machine',
       VMType: 'applehv',
     });
   });
 
   test('removeVm', async () => {
-    await macadam.removeVm({});
-    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['rm', '-f'], {
+    await macadam.removeVm({
+      name: 'vm1',
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['rm', '-f', 'mytype-vm1'], {
       env: {
         CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
@@ -277,8 +316,10 @@ describe('init is done', () => {
   });
 
   test('startVm', async () => {
-    await macadam.startVm({});
-    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['start'], {
+    await macadam.startVm({
+      name: 'vm1',
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['start', 'mytype-vm1'], {
       env: {
         CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
@@ -286,8 +327,10 @@ describe('init is done', () => {
   });
 
   test('stopVm', async () => {
-    await macadam.stopVm({});
-    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['stop'], {
+    await macadam.stopVm({
+      name: 'vm1',
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['stop', 'mytype-vm1'], {
       env: {
         CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },

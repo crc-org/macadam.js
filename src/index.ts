@@ -37,6 +37,7 @@ export interface CreateVmOptions extends CommonOptions {
   // positional args
   imagePath: string;
   // flags
+  name: string; // --name
   sshIdentityPath?: string; // --ssh-identity-path
   username?: string; // -- username
 }
@@ -45,15 +46,25 @@ export interface CreateVmOptions extends CommonOptions {
 export interface ListVmsOptions extends CommonOptions {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface RemoveVmOptions extends CommonOptions {}
+export interface RemoveVmOptions extends CommonOptions {
+  // positional args
+  name: string;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface StartVmOptions extends CommonOptions {}
+export interface StartVmOptions extends CommonOptions {
+  // positional args
+  name: string;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface StopVmOptions extends CommonOptions {}
+export interface StopVmOptions extends CommonOptions {
+  // positional args
+  name: string;
+}
 
 export interface VmDetails {
+  Name: string;
   Image: string;
   CPUs: number;
   Memory: string;
@@ -73,7 +84,12 @@ export class Macadam {
   // #utilitiesPath is undefined if no utilities are needed on the local platform (currently Windows)
   #utilitiesPath?: string;
 
-  constructor(private type: string) {}
+  // prefix added to machine names to differentiate machines between users
+  #vmNamePrefix: string;
+
+  constructor(private type: string) {
+    this.#vmNamePrefix = `${type}-`;
+  }
 
   async init(): Promise<void> {
     return this._init(require.resolve);
@@ -131,7 +147,7 @@ export class Macadam {
     if (!this.#initialized) {
       throw new Error('component not initialized. You must call init() before');
     }
-    const parameters: string[] = ['init', options.imagePath];
+    const parameters: string[] = ['init', options.imagePath, '--name', this.realMachineName(options.name)];
     if (options.sshIdentityPath) {
       parameters.push('--ssh-identity-path');
       parameters.push(options.sshIdentityPath);
@@ -172,7 +188,12 @@ export class Macadam {
         }
       }
     }
-    return result;
+    return result
+      .filter(vm => this.isMachineOwned(vm.Name))
+      .map(vm => ({
+        ...vm,
+        Name: this.visibleMachineName(vm.Name),
+      }));
   }
 
   async removeVm(options: RemoveVmOptions): Promise<extensionApi.RunResult> {
@@ -181,7 +202,7 @@ export class Macadam {
     }
     return await extensionApi.process.exec(
       this.#macadamPath,
-      ['rm', '-f'],
+      ['rm', '-f', this.realMachineName(options.name)],
       this.getFinalOptions(options.runOptions, options.containerProvider),
     );
   }
@@ -192,7 +213,7 @@ export class Macadam {
     }
     return await extensionApi.process.exec(
       this.#macadamPath,
-      ['start'],
+      ['start', this.realMachineName(options.name)],
       this.getFinalOptions(options.runOptions, options.containerProvider),
     );
   }
@@ -203,7 +224,7 @@ export class Macadam {
     }
     return await extensionApi.process.exec(
       this.#macadamPath,
-      ['stop'],
+      ['stop', this.realMachineName(options.name)],
       this.getFinalOptions(options.runOptions, options.containerProvider),
     );
   }
@@ -212,6 +233,7 @@ export class Macadam {
     return (
       !!vm &&
       typeof vm === 'object' &&
+      'Name' in vm &&
       'Image' in vm &&
       'Running' in vm &&
       'Starting' in vm &&
@@ -243,5 +265,20 @@ export class Macadam {
       };
     }
     return finalOptions;
+  }
+
+  protected isMachineOwned(realName: string): boolean {
+    return realName.startsWith(this.#vmNamePrefix);
+  }
+
+  protected realMachineName(visibleName: string): string {
+    return `${this.#vmNamePrefix}${visibleName}`;
+  }
+
+  protected visibleMachineName(realName: string): string {
+    if (!this.isMachineOwned(realName)) {
+      throw new Error('visibleMachineName called on a non owned machine. Please filter machines with isMachineOwned');
+    }
+    return realName.slice(this.#vmNamePrefix.length);
   }
 }
