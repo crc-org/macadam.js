@@ -52,3 +52,9 @@ console.log('==> rm result', rmResult);
 const vms0 = await macadam.listVms({});
 console.log('==> vms after rm', vms0);
 ```
+
+## Details
+
+The `type` passed to the constructor is used to differentiate images between callers. When a caller uses the `my-ext` type,
+the images it creates with `startVm({ name: 'vm1' })` will have a real name `my-ext-vm1`. This real name is only visible when executing `macadam list`, 
+but will be transparent when calling `listVms({})`: this call will display the name `vm1`, and will display only the machines whose real name is prefixed by `my-ext`.
