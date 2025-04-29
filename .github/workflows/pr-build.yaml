@@ -19,7 +19,7 @@ name: PR build
 
 on:
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize, opened, reopened]
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
