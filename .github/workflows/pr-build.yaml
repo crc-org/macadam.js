@@ -27,8 +27,7 @@ env:
 jobs:
   publish:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'ci/publish-from-pr') }}
-    permissions:
-      packages: write  # to publish package on NPM registry
+    permissions: write-all
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
