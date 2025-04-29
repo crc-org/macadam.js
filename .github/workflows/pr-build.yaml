@@ -17,14 +17,16 @@
 
 name: PR build
 
-on: [pull_request]
+on:
+  pull_request:
+    types: [labeled]
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 jobs:
-
   publish:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'ci/publish-from-pr') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
