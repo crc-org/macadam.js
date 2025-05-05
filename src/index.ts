@@ -112,6 +112,10 @@ export class Macadam {
       bin = 'macadam-windows-amd64.exe';
     } else if (extensionApi.env.isMac) {
       bin = 'macadam-installer-macos-universal.pkg';
+    } else if (extensionApi.env.isLinux) {
+      // hardcoded for the moment, the binary must be installed manually on this directory
+      // and gvproxy must be installed as /usr/local/libexec/podman/gvproxy
+      return '/opt/macadam/bin/macadam';
     }
     if (!bin) {
       throw new Error(`binary not found for platform ${platform()} and architecture ${arch()}`);
