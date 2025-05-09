@@ -3,17 +3,7 @@ An NPM library to work with macadam from Node projects
 
 ## Installation
 
-The library is published on GitHub NPM registry. 
-
-You need to indicate in `.npmrc` where is located the package, and you need to authenticate with a GitHub token (classic) having `read:packages` scope:
-
-.npmrc
-```
-@crc-org:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=<TOKEN>
-```
-
-Then you can install the package for your project:
+To install the package for your project:
 
 ```
 npm i @crc-org/macadam.js@latest
