@@ -66,5 +66,5 @@ jobs:
       - name: Set-up npmjs auth token
         run: printf "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}\n" >> ~/.npmrc
 
-      - name: publish npm
-        run: npm publish
+      - name: publish npm package
+        run: pnpm publish  --tag next --no-git-checks --access public
