@@ -7,6 +7,10 @@
   "version": "0.0.1",
   "description": "An NPM library to work with macadam from Node projects",
   "main": "./dist/index.js",
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
   "scripts": {
     "build": "npx tsc --module commonjs",
     "clean": "npx tsc --build --clean",

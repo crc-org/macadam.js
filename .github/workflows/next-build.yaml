@@ -17,6 +17,9 @@
 
 name: next build
 
+permissions:
+  id-token: write
+
 on:
   workflow_dispatch:
   push:
@@ -67,4 +70,4 @@ jobs:
         run: printf "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}\n" >> ~/.npmrc
 
       - name: publish npm package
-        run: pnpm publish  --tag next --no-git-checks --access public
+        run: pnpm publish --provenance --tag next --no-git-checks --access public
