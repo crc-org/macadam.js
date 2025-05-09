@@ -23,9 +23,6 @@ on:
     branches:
       - main
 
-env:
-  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
 jobs:
 
   publish:
@@ -41,8 +38,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: 'https://npm.pkg.github.com'
-          scope: ${{ github.repository_owner }}
           cache: 'pnpm'
 
       - name: Execute pnpm
@@ -67,8 +62,9 @@ jobs:
           TAG_PATTERN=${STRIPPED_VERSION}-$(date +'%Y%m%d%H%M')-${SHORT_SHA1}
           echo "Using version ${TAG_PATTERN}"
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${TAG_PATTERN}\",#g" package.json
-      
+
+      - name: Set-up npmjs auth token
+        run: printf "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}\n" >> ~/.npmrc
+
       - name: publish npm
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
