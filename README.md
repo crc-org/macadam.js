@@ -29,6 +29,13 @@ const startResult = await macadam.startVm({
 });
 console.log('==> start', startResult);
 
+const executeResult = await macadam.executeCommand({
+    name: 'my-vm',
+    command: 'ls',
+    args: [ 'ls' ],
+});
+console.log('==> execute', executeResult);
+
 const stopResult = await macadam.stopVm({
     name: 'my-vm',
 });
