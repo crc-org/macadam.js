@@ -63,6 +63,13 @@ export interface StopVmOptions extends CommonOptions {
   name: string;
 }
 
+export interface ExecuteCommandOptions extends CommonOptions {
+  // positional args
+  name: string;
+  command: string;
+  args: string[];
+}
+
 export interface VmDetails {
   Name: string;
   Image: string;
@@ -229,6 +236,17 @@ export class Macadam {
     return await extensionApi.process.exec(
       this.#macadamPath,
       ['stop', this.realMachineName(options.name)],
+      this.getFinalOptions(options.runOptions, options.containerProvider),
+    );
+  }
+
+  async executeCommand(options: ExecuteCommandOptions): Promise<extensionApi.RunResult> {
+    if (!this.#initialized) {
+      throw new Error('component not initialized. You must call init() before');
+    }
+    return await extensionApi.process.exec(
+      this.#macadamPath,
+      ['ssh', this.realMachineName(options.name), options.command, ...options.args],
       this.getFinalOptions(options.runOptions, options.containerProvider),
     );
   }

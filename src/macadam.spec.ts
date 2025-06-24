@@ -336,4 +336,17 @@ describe('init is done', () => {
       },
     });
   });
+
+  test('executeCommand', async () => {
+    await macadam.executeCommand({
+      name: 'vm1',
+      command: 'ls',
+      args: ['/'],
+    });
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(expect.anything(), ['ssh', 'mytype-vm1', 'ls', '/'], {
+      env: {
+        CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
+      },
+    });
+  });
 });
