@@ -32,7 +32,7 @@ console.log('==> start', startResult);
 const executeResult = await macadam.executeCommand({
     name: 'my-vm',
     command: 'ls',
-    args: [ 'ls' ],
+    args: [ '/' ],
 });
 console.log('==> execute', executeResult);
 
