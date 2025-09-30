@@ -101,6 +101,25 @@ test(
   },
 );
 
+test(
+  'init on Linux',
+  {
+    skip: platform() !== 'linux',
+  },
+  async () => {
+    vi.mocked(extensionApi.env).isMac = false;
+    vi.mocked(extensionApi.env).isWindows = false;
+    vi.mocked(extensionApi.env).isLinux = true;
+    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    await macadam._init(resolver);
+
+    expect(macadam.getMacadamPath()).toEqual('/usr/local/bin/macadam');
+
+    expect(macadam.getUtilitiesPath()).toBeUndefined();
+  },
+);
+
 describe('getFinalOptions', () => {
   test('with no option and no utilitiesPath', () => {
     const result = macadam.getFinalOptions();
