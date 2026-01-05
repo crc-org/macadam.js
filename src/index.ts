@@ -98,13 +98,19 @@ export class Macadam {
     this.#vmNamePrefix = `${type}-`;
   }
 
+  /**
+   * Checks whether binaries are available or if they will be made available by init().
+   *
+   * @returns true if init() can be called without having to install the binaries
+   * - macOS: checks if binary exists (init() will install it if missing)
+   * - Windows: always true (binary is expected to be bundled with library, init() won't install it)
+   * - Linux: always true (binary is a prerequisite, init() won't install it)
+   */
   areBinariesAvailable(): boolean {
     if (extensionApi.env.isMac) {
       const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
       return existsSync(macadamPath);
     }
-    // - On Windows, binary is provided with library
-    // - On Linux, having the binaries is a pre-requisite, we consider them installed
     return true;
   }
 
