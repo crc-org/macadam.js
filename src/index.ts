@@ -98,6 +98,16 @@ export class Macadam {
     this.#vmNamePrefix = `${type}-`;
   }
 
+  areBinariesAvailable(): boolean {
+    if (extensionApi.env.isMac) {
+      const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
+      return existsSync(macadamPath);
+    }
+    // - On Windows, binary is provided with library
+    // - On Linux, having the binaries is a pre-requisite, we consider them installed
+    return true;
+  }
+
   async init(): Promise<void> {
     return this._init(require.resolve);
   }
