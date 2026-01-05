@@ -52,6 +52,41 @@ beforeEach(() => {
   macadam = new TestMacadam('mytype');
 });
 
+test('areBinariesAvailable on Mac when binaries not installed', async () => {
+  vi.mocked(extensionApi.env).isMac = true;
+  vi.mocked(extensionApi.env).isWindows = false;
+  vi.mocked(existsSync).mockReturnValue(false);
+
+  const result = macadam.areBinariesAvailable();
+
+  expect(result).toBeFalsy();
+});
+
+test('areBinariesAvailable on Mac when binaries installed', async () => {
+  vi.mocked(extensionApi.env).isMac = true;
+  vi.mocked(extensionApi.env).isWindows = false;
+  vi.mocked(existsSync).mockReturnValue(true);
+
+  const result = macadam.areBinariesAvailable();
+
+  expect(result).toBeTruthy();
+});
+
+test('areBinariesAvailable on Windows', async () => {
+  vi.mocked(extensionApi.env).isMac = false;
+  vi.mocked(extensionApi.env).isWindows = true;
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeTruthy();
+});
+
+test('areBinariesAvailable on Linux', async () => {
+  vi.mocked(extensionApi.env).isMac = false;
+  vi.mocked(extensionApi.env).isWindows = false;
+  vi.mocked(extensionApi.env).isLinux = true;
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeTruthy();
+});
+
 test(
   'init on Mac',
   {
