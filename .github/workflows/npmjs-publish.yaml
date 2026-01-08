@@ -122,4 +122,4 @@ jobs:
           sed -i  "s#\"version\": \"\(.*\)\",#\"version\": \"${VERSION}\",#g" package.json
 
       - name: publish npm package
-        run: pnpm publish --provenance --tag next --no-git-checks --access public
+        run: pnpm publish --provenance --tag ${{ needs.prepare-version.outputs.dist-tag }} --no-git-checks --access public
