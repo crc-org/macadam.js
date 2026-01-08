@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/crc-org/macadam.js.git"
   },
-  "version": "0.2.0",
+  "version": "0.4.0-next",
   "description": "An NPM library to work with macadam from Node projects",
   "main": "./dist/index.js",
   "publishConfig": {
