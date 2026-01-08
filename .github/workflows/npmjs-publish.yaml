@@ -102,7 +102,7 @@ jobs:
 
       - name: Download macadam binaries
         run: |
-          MACADAM_VERSION=v0.2.0
+          MACADAM_VERSION=v0.3.0
           mkdir binaries
           curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-windows-amd64.exe -o binaries/macadam-windows-amd64.exe
           curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-installer-macos-universal.pkg -o binaries/macadam-installer-macos-universal.pkg
