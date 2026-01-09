@@ -181,8 +181,13 @@ export class Macadam {
   }
 
   protected async isVersionUpToDate(macadamPath: string): Promise<boolean> {
-    const result = await extensionApi.process.exec(macadamPath, ['--version']);
-    return result.stdout.endsWith(MACADAM_VERSION);
+    try {
+      const result = await extensionApi.process.exec(macadamPath, ['--version']);
+      return result.stdout.trim().endsWith(MACADAM_VERSION);
+    } catch (error) {
+      // If we can't determine the version, treat it as not up to date
+      return false;
+    }
   }
 
   //
