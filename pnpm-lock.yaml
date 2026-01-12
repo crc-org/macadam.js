@@ -11,9 +11,6 @@ importers:
       '@podman-desktop/api':
         specifier: ^1.18.0
         version: 1.24.2
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
       semver:
         specifier: ^7.7.3
         version: 7.7.3
@@ -30,6 +27,9 @@ importers:
       '@types/node':
         specifier: ^24
         version: 24.10.4
+      '@types/semver':
+        specifier: ^7.7.1
+        version: 7.7.1
       '@vitest/coverage-v8':
         specifier: ^4.0.16
         version: 4.0.16(vitest@4.0.16(@types/node@24.10.4))
