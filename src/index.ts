@@ -20,8 +20,9 @@ import { arch, platform } from 'node:os';
 import { dirname, resolve } from 'node:path';
 
 import * as extensionApi from '@podman-desktop/api';
+import { compare } from 'semver';
 
-import { MACADAM_MACOS_PATH, PACKAGE_NAME } from './consts';
+import { MACADAM_MACOS_PATH, MACADAM_VERSION, PACKAGE_NAME } from './consts';
 
 type Resolver = (request: string, options?: NodeJS.RequireResolveOptions) => string;
 
@@ -106,12 +107,15 @@ export class Macadam {
    * - Windows: always true (binary is expected to be bundled with library, init() won't install it)
    * - Linux: always true (binary is a prerequisite, init() won't install it)
    */
-  areBinariesAvailable(): boolean {
-    if (extensionApi.env.isMac) {
-      const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
-      return existsSync(macadamPath);
+  async areBinariesAvailable(): Promise<boolean> {
+    if (!extensionApi.env.isMac) {
+      return true;
     }
-    return true;
+    const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
+    if (!existsSync(macadamPath)) {
+      return false;
+    }
+    return await this.isVersionUpToDate(macadamPath);
   }
 
   async init(): Promise<void> {
@@ -149,7 +153,7 @@ export class Macadam {
 
   async findInstallMacadam(resolver: Resolver): Promise<string> {
     const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
-    if (!existsSync(macadamPath)) {
+    if (!existsSync(macadamPath) || !(await this.isVersionUpToDate(macadamPath))) {
       const installer = await this.findMacadamPath(resolver);
       await extensionApi.process.exec('installer', ['-pkg', installer, '-target', '/'], { isAdmin: true });
     }
@@ -162,6 +166,21 @@ export class Macadam {
 
   protected getUtilitiesPath(): string | undefined {
     return this.#utilitiesPath;
+  }
+
+  protected async isVersionUpToDate(macadamPath: string): Promise<boolean> {
+    try {
+      const result = await extensionApi.process.exec(macadamPath, ['--version']);
+      const version = RegExp(/v(\d+\.\d+\.\d+)/).exec(result.stdout.trim())?.[1];
+      // if the version is not found, consider it is not up to date
+      if (!version) {
+        return false;
+      }
+      return compare(version, MACADAM_VERSION) >= 0;
+    } catch (error) {
+      // If we can't determine the version, treat it as not up to date
+      return false;
+    }
   }
 
   //

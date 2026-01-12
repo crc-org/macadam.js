@@ -11,6 +11,9 @@ importers:
       '@podman-desktop/api':
         specifier: ^1.18.0
         version: 1.24.2
+      semver:
+        specifier: ^7.7.3
+        version: 7.7.3
     devDependencies:
       '@eslint/compat':
         specifier: ^2.0.0
@@ -24,6 +27,9 @@ importers:
       '@types/node':
         specifier: ^24
         version: 24.10.4
+      '@types/semver':
+        specifier: ^7.7.1
+        version: 7.7.1
       '@vitest/coverage-v8':
         specifier: ^4.0.16
         version: 4.0.16(vitest@4.0.16(@types/node@24.10.4))
@@ -520,8 +526,8 @@ packages:
   '@types/node@24.10.4':
     resolution: {integrity: sha512-vnDVpYPMzs4wunl27jHrfmwojOGKya0xyM3sH+UE5iv5uPS6vX7UIoh6m+vQc5LGBq52HBKPIn/zcSZVzeDEZg==}
 
-  '@types/semver@7.7.0':
-    resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
+  '@types/semver@7.7.1':
+    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -2468,7 +2474,7 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/semver@7.7.0': {}
+  '@types/semver@7.7.1': {}
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -2606,7 +2612,7 @@ snapshots:
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.2)
       '@types/json-schema': 7.0.15
-      '@types/semver': 7.7.0
+      '@types/semver': 7.7.1
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.9.3)
@@ -2621,7 +2627,7 @@ snapshots:
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.2)
       '@types/json-schema': 7.0.15
-      '@types/semver': 7.7.0
+      '@types/semver': 7.7.1
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.9.3)
