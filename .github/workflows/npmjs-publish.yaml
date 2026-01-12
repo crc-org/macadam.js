@@ -102,10 +102,11 @@ jobs:
 
       - name: Download macadam binaries
         run: |
-          MACADAM_VERSION=v0.3.0
+          # get the version from consts.ts
+          MACADAM_VERSION=$(grep 'MACADAM_VERSION\s*=' src/consts.ts | sed "s/.*'\([^']*\)';/\1/")
           mkdir binaries
-          curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-windows-amd64.exe -o binaries/macadam-windows-amd64.exe
-          curl -L https://github.com/crc-org/macadam/releases/download/${MACADAM_VERSION}/macadam-installer-macos-universal.pkg -o binaries/macadam-installer-macos-universal.pkg
+          curl -L https://github.com/crc-org/macadam/releases/download/v${MACADAM_VERSION}/macadam-windows-amd64.exe -o binaries/macadam-windows-amd64.exe
+          curl -L https://github.com/crc-org/macadam/releases/download/v${MACADAM_VERSION}/macadam-installer-macos-universal.pkg -o binaries/macadam-installer-macos-universal.pkg
 
       - name: Show publish parameters
         run: |
