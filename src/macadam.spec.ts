@@ -71,7 +71,7 @@ test('areBinariesAvailable on Mac when binaries installed', async () => {
   expect(result).toBeTruthy();
 });
 
-test('ensureBinariesUpToDate on Mac when binaries installed with incorrect version', async () => {
+test('_ensureBinariesUpToDate on Mac when binaries installed with incorrect version', async () => {
   vi.mocked(extensionApi.env).isMac = true;
   vi.mocked(extensionApi.env).isWindows = false;
   vi.mocked(existsSync).mockReturnValue(true);
@@ -91,7 +91,7 @@ test('ensureBinariesUpToDate on Mac when binaries installed with incorrect versi
   );
 });
 
-test('areBinariesAvailable on Mac when binaries installed with newest version', async () => {
+test('_ensureBinariesUpToDate on Mac when binaries installed with newest version', async () => {
   vi.mocked(extensionApi.env).isMac = true;
   vi.mocked(extensionApi.env).isWindows = false;
   vi.mocked(existsSync).mockReturnValue(true);
