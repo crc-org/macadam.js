@@ -103,19 +103,16 @@ export class Macadam {
    * Checks whether binaries are available or if they will be made available by init().
    *
    * @returns true if init() can be called without having to install the binaries
-   * - macOS: checks if binary exists (init() will install it if missing)
+   * - macOS: checks if binary exists (init() will install it if missing), no matter their version
    * - Windows: always true (binary is expected to be bundled with library, init() won't install it)
    * - Linux: always true (binary is a prerequisite, init() won't install it)
    */
-  async areBinariesAvailable(): Promise<boolean> {
+  areBinariesAvailable(): boolean {
     if (!extensionApi.env.isMac) {
       return true;
     }
     const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
-    if (!existsSync(macadamPath)) {
-      return false;
-    }
-    return await this.isVersionUpToDate(macadamPath);
+    return existsSync(macadamPath);
   }
 
   async init(): Promise<void> {
@@ -131,6 +128,30 @@ export class Macadam {
       this.#utilitiesPath = MACADAM_MACOS_PATH;
     }
     this.#initialized = true;
+  }
+
+  /**
+   * Upgrades the binaries with the ones provided by the library if they are not up to date.
+   *
+   * @returns true if the binaries are up to date
+   * - macOS: checks if binary is up to date
+   * - Windows: always true (binary is expected to be bundled with library)
+   * - Linux: always true (binary is a prerequisite)
+   */
+  async ensureBinariesUpToDate(): Promise<void> {
+    return this._ensureBinariesUpToDate(require.resolve);
+  }
+
+  async _ensureBinariesUpToDate(resolver?: Resolver): Promise<void> {
+    resolver ??= require.resolve;
+    if (!extensionApi.env.isMac) {
+      return;
+    }
+    const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
+    if (!existsSync(macadamPath) || !(await this.isVersionUpToDate(macadamPath))) {
+      const installer = await this.findMacadamPath(resolver);
+      await extensionApi.process.exec('installer', ['-pkg', installer, '-target', '/'], { isAdmin: true });
+    }
   }
 
   async findMacadamPath(resolver: Resolver): Promise<string> {
@@ -153,7 +174,7 @@ export class Macadam {
 
   async findInstallMacadam(resolver: Resolver): Promise<string> {
     const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
-    if (!existsSync(macadamPath) || !(await this.isVersionUpToDate(macadamPath))) {
+    if (!existsSync(macadamPath)) {
       const installer = await this.findMacadamPath(resolver);
       await extensionApi.process.exec('installer', ['-pkg', installer, '-target', '/'], { isAdmin: true });
     }
