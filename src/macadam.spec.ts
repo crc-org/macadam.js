@@ -57,38 +57,69 @@ test('areBinariesAvailable on Mac when binaries not installed', async () => {
   vi.mocked(extensionApi.env).isWindows = false;
   vi.mocked(existsSync).mockReturnValue(false);
 
-  const result = await macadam.areBinariesAvailable();
+  const result = macadam.areBinariesAvailable();
 
   expect(result).toBeFalsy();
 });
 
-test('areBinariesAvailable on Mac when binaries installed with incorrect version', async () => {
+test('areBinariesAvailable on Mac when binaries installed', async () => {
   vi.mocked(extensionApi.env).isMac = true;
   vi.mocked(extensionApi.env).isWindows = false;
   vi.mocked(existsSync).mockReturnValue(true);
-  vi.mocked(extensionApi.process.exec).mockResolvedValue({
-    stdout: 'macadam version v0.2.0',
-    stderr: '',
-    command: '',
-  });
-  const result = await macadam.areBinariesAvailable();
-
-  expect(result).toBeFalsy();
-});
-
-test('areBinariesAvailable on Mac when binaries installed with newest version', async () => {
-  vi.mocked(extensionApi.env).isMac = true;
-  vi.mocked(extensionApi.env).isWindows = false;
-  vi.mocked(existsSync).mockReturnValue(true);
-  vi.mocked(extensionApi.process.exec).mockResolvedValue({
-    stdout: 'macadam version v10000.0.0',
-    stderr: '',
-    command: '',
-  });
-  const result = await macadam.areBinariesAvailable();
+  const result = macadam.areBinariesAvailable();
 
   expect(result).toBeTruthy();
 });
+
+test(
+  '_ensureBinariesUpToDate on Mac when binaries installed with incorrect version',
+  {
+    skip: platform() !== 'darwin',
+  },
+  async () => {
+    vi.mocked(extensionApi.env).isMac = true;
+    vi.mocked(extensionApi.env).isWindows = false;
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(extensionApi.process.exec).mockResolvedValue({
+      stdout: 'macadam version v0.2.0',
+      stderr: '',
+      command: '',
+    });
+    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    await macadam._ensureBinariesUpToDate(resolver);
+
+    expect(extensionApi.process.exec).toHaveBeenCalledWith(
+      'installer',
+      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal.pkg', '-target', '/'],
+      { isAdmin: true },
+    );
+  },
+);
+
+test(
+  '_ensureBinariesUpToDate on Mac when binaries installed with newest version',
+  {
+    skip: platform() !== 'darwin',
+  },
+  async () => {
+    vi.mocked(extensionApi.env).isMac = true;
+    vi.mocked(extensionApi.env).isWindows = false;
+    vi.mocked(existsSync).mockReturnValue(true);
+    vi.mocked(extensionApi.process.exec).mockResolvedValue({
+      stdout: `macadam version v${MACADAM_VERSION}`,
+      stderr: '',
+      command: '',
+    });
+    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    await macadam._ensureBinariesUpToDate(resolver);
+
+    // check that only macadam binary is executed, not the installer
+    expect(extensionApi.process.exec).toHaveBeenCalledOnce();
+    expect(extensionApi.process.exec).toHaveBeenCalledWith('/opt/macadam/bin/macadam', expect.anything());
+  },
+);
 
 test('areBinariesAvailable on Mac when binaries installed with correct version', async () => {
   vi.mocked(extensionApi.env).isMac = true;
@@ -99,7 +130,7 @@ test('areBinariesAvailable on Mac when binaries installed with correct version',
     stderr: '',
     command: '',
   });
-  const result = await macadam.areBinariesAvailable();
+  const result = macadam.areBinariesAvailable();
 
   expect(result).toBeTruthy();
 });
@@ -107,7 +138,7 @@ test('areBinariesAvailable on Mac when binaries installed with correct version',
 test('areBinariesAvailable on Windows', async () => {
   vi.mocked(extensionApi.env).isMac = false;
   vi.mocked(extensionApi.env).isWindows = true;
-  const result = await macadam.areBinariesAvailable();
+  const result = macadam.areBinariesAvailable();
   expect(result).toBeTruthy();
 });
 
@@ -115,7 +146,7 @@ test('areBinariesAvailable on Linux', async () => {
   vi.mocked(extensionApi.env).isMac = false;
   vi.mocked(extensionApi.env).isWindows = false;
   vi.mocked(extensionApi.env).isLinux = true;
-  const result = await macadam.areBinariesAvailable();
+  const result = macadam.areBinariesAvailable();
   expect(result).toBeTruthy();
 });
 
@@ -146,82 +177,6 @@ test(
       ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal.pkg', '-target', '/'],
       { isAdmin: true },
     );
-  },
-);
-
-test(
-  'init with version upgrade on Mac, with wrong binaries version',
-  {
-    skip: platform() !== 'darwin',
-  },
-  async () => {
-    vi.mocked(extensionApi.env).isMac = true;
-    vi.mocked(extensionApi.env).isWindows = false;
-    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
-    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
-    vi.mocked(existsSync).mockReturnValue(true);
-    vi.mocked(extensionApi.process.exec).mockImplementation(command => {
-      if (command.endsWith('macadam')) {
-        return Promise.resolve({
-          stdout: `macadam version v0.2.0`,
-          stderr: '',
-          command: '',
-        });
-      }
-      return Promise.resolve({
-        stdout: '',
-        stderr: '',
-        command: '',
-      });
-    });
-    await macadam._init(resolver);
-
-    expect(macadam.getMacadamPath()).toEqual(resolve(MACADAM_MACOS_PATH, 'macadam'));
-
-    expect(macadam.getUtilitiesPath()).toEqual(MACADAM_MACOS_PATH);
-
-    expect(extensionApi.process.exec).toHaveBeenCalledWith(
-      'installer',
-      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal.pkg', '-target', '/'],
-      { isAdmin: true },
-    );
-  },
-);
-
-test(
-  'init with version upgrade on Mac, with correct binaries version',
-  {
-    skip: platform() !== 'darwin',
-  },
-  async () => {
-    vi.mocked(extensionApi.env).isMac = true;
-    vi.mocked(extensionApi.env).isWindows = false;
-    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
-    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
-    vi.mocked(existsSync).mockReturnValue(true);
-    vi.mocked(extensionApi.process.exec).mockImplementation(command => {
-      if (command.endsWith('macadam')) {
-        return Promise.resolve({
-          stdout: `macadam version v${MACADAM_VERSION}`,
-          stderr: '',
-          command: '',
-        });
-      }
-      return Promise.resolve({
-        stdout: '',
-        stderr: '',
-        command: '',
-      });
-    });
-    await macadam._init(resolver);
-
-    expect(macadam.getMacadamPath()).toEqual(resolve(MACADAM_MACOS_PATH, 'macadam'));
-
-    expect(macadam.getUtilitiesPath()).toEqual(MACADAM_MACOS_PATH);
-
-    // check that only macadam binary is executed, not the installer
-    expect(extensionApi.process.exec).toHaveBeenCalledOnce();
-    expect(extensionApi.process.exec).toHaveBeenCalledWith('/opt/macadam/bin/macadam', expect.anything());
   },
 );
 
