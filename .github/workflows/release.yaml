@@ -79,7 +79,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -123,7 +123,7 @@ jobs:
         run: echo the release id is ${{ needs.tag.outputs.releaseId}}
 
       - name: Publish release
-        uses: StuYarrow/publish-release@v1.1.2
+        uses: StuYarrow/publish-release@01f2a1365bacd77bad861873a7fdf274ab49eefd # v1.1.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
