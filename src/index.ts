@@ -22,7 +22,7 @@ import { dirname, resolve } from 'node:path';
 import * as extensionApi from '@podman-desktop/api';
 import { compare } from 'semver';
 
-import { MACADAM_MACOS_PATH, MACADAM_VERSION, PACKAGE_NAME } from './consts';
+import { MACADAM_LINUX_PATHS, MACADAM_MACOS_PATH, MACADAM_VERSION, PACKAGE_NAME } from './consts';
 
 type Resolver = (request: string, options?: NodeJS.RequireResolveOptions) => string;
 
@@ -105,14 +105,18 @@ export class Macadam {
    * @returns true if init() can be called without having to install the binaries
    * - macOS: checks if binary exists (init() will install it if missing), no matter their version
    * - Windows: always true (binary is expected to be bundled with library, init() won't install it)
-   * - Linux: always true (binary is a prerequisite, init() won't install it)
+   * - Linux: checks if binary exists at known paths (/usr/bin or /usr/local/bin), including Flatpak host paths
    */
   areBinariesAvailable(): boolean {
-    if (!extensionApi.env.isMac) {
-      return true;
+    if (extensionApi.env.isLinux) {
+      return this.findLinuxBinaryPath() !== undefined;
     }
-    const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
-    return existsSync(macadamPath);
+    if (extensionApi.env.isMac) {
+      const macadamPath = resolve(MACADAM_MACOS_PATH, 'macadam');
+      return existsSync(macadamPath);
+    }
+    // Windows: binary is bundled with library
+    return true;
   }
 
   async init(): Promise<void> {
@@ -159,15 +163,29 @@ export class Macadam {
     } else if (extensionApi.env.isMac) {
       bin = 'macadam-installer-macos-universal.pkg';
     } else if (extensionApi.env.isLinux) {
-      // hardcoded for the moment, the binary must be installed manually on this directory
-      // and gvproxy must be installed as /usr/local/libexec/podman/gvproxy
-      return '/usr/local/bin/macadam';
+      // binary must be installed manually, gvproxy must be installed as /usr/local/libexec/podman/gvproxy
+      return this.findLinuxBinaryPath() ?? MACADAM_LINUX_PATHS[0];
     }
     if (!bin) {
       throw new Error(`binary not found for platform ${platform()} and architecture ${arch()}`);
     }
     const packagePath = dirname(resolver(`${PACKAGE_NAME}/package.json`));
     return resolve(packagePath, 'binaries', bin);
+  }
+
+  protected findLinuxBinaryPath(): string | undefined {
+    const found = MACADAM_LINUX_PATHS.find(p => existsSync(p));
+    if (found) {
+      return found;
+    }
+    // In Flatpak, host binaries are accessible via /var/run/host prefix
+    if (process.env.FLATPAK_ID) {
+      const hostFound = MACADAM_LINUX_PATHS.find(p => existsSync(`/var/run/host${p}`));
+      if (hostFound) {
+        return hostFound; // Return non-prefixed path for use with flatpak-spawn
+      }
+    }
+    return undefined;
   }
 
   async findInstallMacadam(resolver: Resolver): Promise<string> {

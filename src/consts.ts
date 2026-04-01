@@ -18,4 +18,5 @@
 
 export const PACKAGE_NAME = '@crc-org/macadam.js';
 export const MACADAM_MACOS_PATH = '/opt/macadam/bin';
+export const MACADAM_LINUX_PATHS = ['/usr/bin/macadam', '/usr/local/bin/macadam'];
 export const MACADAM_VERSION = '0.3.0';

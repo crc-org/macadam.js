@@ -23,7 +23,7 @@ import * as extensionApi from '@podman-desktop/api';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Macadam } from '.';
-import { MACADAM_MACOS_PATH, MACADAM_VERSION } from './consts';
+import { MACADAM_LINUX_PATHS, MACADAM_MACOS_PATH, MACADAM_VERSION } from './consts';
 
 class TestMacadam extends Macadam {
   override _init(resolver?: (request: string, options?: NodeJS.RequireResolveOptions) => string): Promise<void> {
@@ -41,6 +41,10 @@ class TestMacadam extends Macadam {
   override getFinalOptions(runOptions?: extensionApi.RunOptions, containerProvider?: string): extensionApi.RunOptions {
     return super.getFinalOptions(runOptions, containerProvider);
   }
+
+  override findLinuxBinaryPath(): string | undefined {
+    return super.findLinuxBinaryPath();
+  }
 }
 
 vi.mock(import('node:fs'));
@@ -49,6 +53,9 @@ let macadam: TestMacadam;
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(extensionApi.env).isMac = false;
+  vi.mocked(extensionApi.env).isWindows = false;
+  vi.mocked(extensionApi.env).isLinux = false;
   macadam = new TestMacadam('mytype');
 });
 
@@ -142,12 +149,48 @@ test('areBinariesAvailable on Windows', async () => {
   expect(result).toBeTruthy();
 });
 
-test('areBinariesAvailable on Linux', async () => {
-  vi.mocked(extensionApi.env).isMac = false;
-  vi.mocked(extensionApi.env).isWindows = false;
+test('areBinariesAvailable on Linux when binary not installed', async () => {
   vi.mocked(extensionApi.env).isLinux = true;
+  vi.mocked(existsSync).mockReturnValue(false);
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeFalsy();
+});
+
+test('areBinariesAvailable on Linux when binary installed at /usr/bin', async () => {
+  vi.mocked(extensionApi.env).isLinux = true;
+  vi.mocked(existsSync).mockImplementation(path => path === '/usr/bin/macadam');
   const result = macadam.areBinariesAvailable();
   expect(result).toBeTruthy();
+});
+
+test('areBinariesAvailable on Linux when binary installed at /usr/local/bin', async () => {
+  vi.mocked(extensionApi.env).isLinux = true;
+  vi.mocked(existsSync).mockImplementation(path => path === '/usr/local/bin/macadam');
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeTruthy();
+});
+
+test('areBinariesAvailable on Linux in Flatpak when binary on host', async () => {
+  vi.mocked(extensionApi.env).isLinux = true;
+  // Use PD as an example
+  process.env.FLATPAK_ID = 'io.podman_desktop.PodmanDesktop';
+  vi.mocked(existsSync).mockImplementation(path => path === '/var/run/host/usr/bin/macadam');
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeTruthy();
+  // Delete the env variable to avoid impacting other tests
+  delete process.env.FLATPAK_ID;
+});
+
+test('areBinariesAvailable on Linux in Flatpak when binary not on host', async () => {
+  vi.mocked(extensionApi.env).isLinux = true;
+  // Use PD as an example
+  process.env.FLATPAK_ID = 'io.podman_desktop.PodmanDesktop';
+  vi.mocked(existsSync).mockReturnValue(false);
+  const result = macadam.areBinariesAvailable();
+  expect(result).toBeFalsy();
+
+  // Delete the env variable to avoid impacting other tests
+  delete process.env.FLATPAK_ID;
 });
 
 test(
@@ -206,20 +249,52 @@ test(
 );
 
 test(
-  'init on Linux',
+  'init on Linux with binary at /usr/bin',
   {
     skip: platform() !== 'linux',
   },
   async () => {
-    vi.mocked(extensionApi.env).isMac = false;
-    vi.mocked(extensionApi.env).isWindows = false;
     vi.mocked(extensionApi.env).isLinux = true;
+    vi.mocked(existsSync).mockImplementation(path => path === '/usr/bin/macadam');
+    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    await macadam._init(resolver);
+
+    expect(macadam.getMacadamPath()).toEqual('/usr/bin/macadam');
+    expect(macadam.getUtilitiesPath()).toBeUndefined();
+  },
+);
+
+test(
+  'init on Linux with binary at /usr/local/bin',
+  {
+    skip: platform() !== 'linux',
+  },
+  async () => {
+    vi.mocked(extensionApi.env).isLinux = true;
+    vi.mocked(existsSync).mockImplementation(path => path === '/usr/local/bin/macadam');
     const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
     resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
     await macadam._init(resolver);
 
     expect(macadam.getMacadamPath()).toEqual('/usr/local/bin/macadam');
+    expect(macadam.getUtilitiesPath()).toBeUndefined();
+  },
+);
 
+test(
+  'init on Linux falls back to first path when binary not found',
+  {
+    skip: platform() !== 'linux',
+  },
+  async () => {
+    vi.mocked(extensionApi.env).isLinux = true;
+    vi.mocked(existsSync).mockReturnValue(false);
+    const resolver = vi.fn<(request: string, options?: NodeJS.RequireResolveOptions) => string>();
+    resolver.mockReturnValue(resolve('/', 'path', 'to', 'extension', 'package.json'));
+    await macadam._init(resolver);
+
+    expect(macadam.getMacadamPath()).toEqual(MACADAM_LINUX_PATHS[0]);
     expect(macadam.getUtilitiesPath()).toBeUndefined();
   },
 );
