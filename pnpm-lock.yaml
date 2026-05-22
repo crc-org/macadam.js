@@ -9,38 +9,38 @@ importers:
   .:
     dependencies:
       '@podman-desktop/api':
-        specifier: ^1.18.0
+        specifier: ^1.27.1
         version: 1.27.1
       semver:
-        specifier: ^7.7.3
+        specifier: ^7.8.1
         version: 7.8.1
     devDependencies:
       '@eslint/compat':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: 2.1.0(eslint@9.39.4)
       '@eslint/eslintrc':
-        specifier: ^3.3.1
+        specifier: ^3.3.5
         version: 3.3.5
       '@eslint/js':
-        specifier: ^9.24.0
+        specifier: ^9.39.4
         version: 9.39.4
       '@types/node':
-        specifier: ^24
+        specifier: ^24.12.4
         version: 24.12.4
       '@types/semver':
         specifier: ^7.7.1
         version: 7.7.1
       '@vitest/coverage-v8':
-        specifier: ^4.0.16
+        specifier: ^4.1.7
         version: 4.1.7(vitest@4.1.7)
       '@vitest/eslint-plugin':
-        specifier: ^1.1.43
+        specifier: ^1.6.17
         version: 1.6.17(@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)(typescript@5.9.3)(vitest@4.1.7)
       eslint:
-        specifier: ^9.24.0
+        specifier: ^9.39.4
         version: 9.39.4
       eslint-import-resolver-typescript:
-        specifier: ^4.3.2
+        specifier: ^4.4.4
         version: 4.4.4(eslint-plugin-import@2.32.0)(eslint@9.39.4)
       eslint-plugin-etc:
         specifier: ^2.0.3
@@ -49,7 +49,7 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2(eslint@9.39.4)
       eslint-plugin-import:
-        specifier: ^2.31.0
+        specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.4)(eslint@9.39.4)
       eslint-plugin-no-null:
         specifier: ^1.0.2
@@ -61,25 +61,25 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0(eslint@9.39.4)
       eslint-plugin-sonarjs:
-        specifier: ^4.0.0
+        specifier: ^4.0.3
         version: 4.0.3(eslint@9.39.4)
       eslint-plugin-unicorn:
         specifier: ^64.0.0
         version: 64.0.0(eslint@9.39.4)
       globals:
-        specifier: ^17.0.0
+        specifier: ^17.6.0
         version: 17.6.0
       prettier:
-        specifier: ^3.5.3
+        specifier: ^3.8.3
         version: 3.8.3
       typescript:
-        specifier: ^5.8.3
+        specifier: ^5.9.3
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.30.1
+        specifier: ^8.59.4
         version: 8.59.4(eslint@9.39.4)(typescript@5.9.3)
       vitest:
-        specifier: ^4.0.16
+        specifier: ^4.1.7
         version: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(vite@7.3.1(@types/node@24.12.4))
 
 packages:
@@ -1653,9 +1653,6 @@ packages:
   minimatch@10.2.5:
     resolution: {integrity: sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==}
     engines: {node: 18 || 20 || >=22}
-
-  minimatch@3.1.2:
-    resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
 
   minimatch@3.1.5:
     resolution: {integrity: sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==}
@@ -3344,7 +3341,7 @@ snapshots:
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
-      minimatch: 3.1.2
+      minimatch: 3.1.5
       object.fromentries: 2.0.8
       object.groupby: 1.0.3
       object.values: 1.2.1
@@ -3857,10 +3854,6 @@ snapshots:
   minimatch@10.2.5:
     dependencies:
       brace-expansion: 5.0.5
-
-  minimatch@3.1.2:
-    dependencies:
-      brace-expansion: 1.1.12
 
   minimatch@3.1.5:
     dependencies:
