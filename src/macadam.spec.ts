@@ -98,7 +98,7 @@ test(
 
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       'installer',
-      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal.pkg', '-target', '/'],
+      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal-signed.pkg', '-target', '/'],
       { isAdmin: true },
     );
   },
@@ -217,7 +217,7 @@ test(
 
     expect(extensionApi.process.exec).toHaveBeenCalledWith(
       'installer',
-      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal.pkg', '-target', '/'],
+      ['-pkg', '/path/to/extension/binaries/macadam-installer-macos-universal-signed.pkg', '-target', '/'],
       { isAdmin: true },
     );
   },
