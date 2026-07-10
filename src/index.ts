@@ -161,7 +161,7 @@ export class Macadam {
     if (extensionApi.env.isWindows) {
       bin = 'macadam-windows-amd64.exe';
     } else if (extensionApi.env.isMac) {
-      bin = 'macadam-installer-macos-universal.pkg';
+      bin = 'macadam-installer-macos-universal-signed.pkg';
     } else if (extensionApi.env.isLinux) {
       // binary must be installed manually, gvproxy must be installed as /usr/local/libexec/podman/gvproxy
       return this.findLinuxBinaryPath() ?? MACADAM_LINUX_PATHS[0];
