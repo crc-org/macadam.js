@@ -220,6 +220,25 @@ export class Macadam {
     }
   }
 
+  /**
+   * Get the version of the currently installed macadam binary.
+   * This method requires init() to have been called first.
+   *
+   * @returns The installed version string, or undefined if it cannot be determined
+   */
+  async getVersion(): Promise<string | undefined> {
+    if (!this.#initialized) {
+      throw new Error('component not initialized. You must call init() before');
+    }
+    try {
+      const result = await extensionApi.process.exec(this.#macadamPath, ['--version']);
+      const version = RegExp(/v(\d+\.\d+\.\d+)/).exec(result.stdout.trim())?.[1];
+      return version;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
   //
   // Below, init should have been called
   //

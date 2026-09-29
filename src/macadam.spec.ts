@@ -393,6 +393,10 @@ describe('init is not done', async () => {
       'component not initialized. You must call init() before',
     );
   });
+
+  test('getVersion throws an error when not initialized', async () => {
+    await expect(macadam.getVersion()).rejects.toThrowError('component not initialized. You must call init() before');
+  });
 });
 
 describe('init is done', () => {
@@ -546,5 +550,31 @@ describe('init is done', () => {
         CONTAINERS_HELPER_BINARY_DIR: MACADAM_MACOS_PATH,
       },
     });
+  });
+
+  test('getVersion returns version when available', async () => {
+    vi.mocked(extensionApi.process.exec).mockResolvedValue({
+      stdout: `macadam version v${MACADAM_VERSION}`,
+      stderr: '',
+      command: '',
+    });
+    const version = await macadam.getVersion();
+    expect(version).toBe(MACADAM_VERSION);
+  });
+
+  test('getVersion returns undefined when version cannot be determined', async () => {
+    vi.mocked(extensionApi.process.exec).mockResolvedValue({
+      stdout: 'invalid output',
+      stderr: '',
+      command: '',
+    });
+    const version = await macadam.getVersion();
+    expect(version).toBeUndefined();
+  });
+
+  test('getVersion returns undefined on error', async () => {
+    vi.mocked(extensionApi.process.exec).mockRejectedValue(new Error('command failed'));
+    const version = await macadam.getVersion();
+    expect(version).toBeUndefined();
   });
 });
